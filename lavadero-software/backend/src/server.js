@@ -26,13 +26,26 @@ app.get("/turnos", (req, res) => {
 
 // ✅ Crear turno
 app.post("/turnos", (req, res) => {
-  const { nombre, fecha, hora, patente } = req.body;
+  const { dni, nombre, apellido, fecha } = req.body;
   db.query(
-    "INSERT INTO turnos (nombre, fecha, hora, patente) VALUES (?, ?, ?, ?)",
-    [nombre, fecha, hora, patente],
+    "INSERT INTO turnos (dni, nombre, apellido, fecha) VALUES (?, ?, ?, ?)",
+    [dni, nombre, apellido, fecha],
     (err, result) => {
-      if (err) return res.status(400).json({ error: "Ese horario ya está ocupado" });
-      res.json({ message: "Turno creado" });
+      if (err) return res.status(400).json(err);
+      res.json({ message: "Turno registrado con éxito" });
+    }
+  );
+});
+
+// Turnos por Dia
+app.get("/turnos/:fecha", (req, res) => {
+  const { fecha } = req.params;
+  db.query(
+    "SELECT * FROM turnos WHERE fecha=? ORDER BY creado ASC",
+    [fecha],
+    (err, result) => {
+      if (err) return res.status(500).json(err);
+      res.json(result);
     }
   );
 });
@@ -40,13 +53,24 @@ app.post("/turnos", (req, res) => {
 // ✅ Editar turno
 app.put("/turnos/:id", (req, res) => {
   const { id } = req.params;
-  const { nombre, fecha, hora, patente } = req.body;
+  const {dni, nombre, apellido, fecha } = req.body;
   db.query(
-    "UPDATE turnos SET nombre=?, fecha=?, hora=?, patente=? WHERE id=?",
-    [nombre, fecha, hora, patente, id],
+    "UPDATE turnos SET dni=?, nombre=?, apellido=?, fecha=? WHERE id=?",
+    [dni, nombre, apellido, fecha, id],
     (err, result) => {
-      if (err) return res.status(400).json(err);
+      if (err) return res.status(400).json(err);  
       res.json({ message: "Turno actualizado" });
+    }
+  );
+});
+
+// Resgitro Completo
+app.get("/registro", (req, res) => {
+  db.query(
+    "SELECT * FROM turnos ORDER BY creado DESC",
+    (err, result) => {
+      if (err) return res.status(500).json(err);
+      res.json(result);
     }
   );
 });
